@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Specification System</title>
+    <link rel="icon" type="image/png" href="/static/favicon.png">
+
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="/static/style.css">
+
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: var(--bg-body);
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 2.5rem;
+            text-align: center;
+        }
+
+        .login-header {
+            margin-bottom: 2rem;
+        }
+
+        .login-header h1 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .error-msg {
+            color: #ef4444;
+            background: #fee2e2;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="login-app" class="dashboard-layout" v-cloak>
+        <main class="main-content" style="display: flex; align-items: center; justify-content: center;">
+            <div class="login-container glass-panel">
+                <div class="login-header">
+                    <h1>Welcome Back</h1>
+                    <p style="color: var(--text-muted)">Please sign in to continue</p>
+                </div>
+
+                <div v-if="error" class="error-msg">
+                    {{ error }}
+                </div>
+
+                <form @submit.prevent="handleLogin" class="form-grid" style="grid-template-columns: 1fr;">
+                    <div class="form-group">
+                        <label style="text-align: left; display: block;">Username</label>
+                        <input type="text" v-model="username" class="form-input" required autofocus>
+                    </div>
+
+                    <div class="form-group">
+                        <label style="text-align: left; display: block;">Password</label>
+                        <input type="password" v-model="password" class="form-input" required>
+                    </div>
+
+                    <button type="submit" class="primary-btn"
+                        style="width: 100%; justify-content: center; margin-top: 1rem;" :disabled="loading">
+                        <div class="spinner-small" v-if="loading"></div>
+                        <span>{{ loading ? 'Signing in...' : 'Sign In' }}</span>
+                    </button>
+                </form>
+            </div>
+        </main>
+    </div>
+    </div>
+
+    <script>
+        const { createApp, ref } = Vue;
+
+        createApp({
+            setup() {
+                const username = ref('');
+                const password = ref('');
+                const loading = ref(false);
+                const error = ref('');
+
+                const handleLogin = async () => {
+                    loading.value = true;
+                    error.value = '';
+
+                    try {
+                        const response = await fetch('/api/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                username: username.value,
+                                password: password.value
+                            })
+                        });
+
+                        if (response.ok) {
+                            window.location.href = '/';
+                        } else {
+                            const data = await response.json();
+                            error.value = data.detail || 'Invalid credentials';
+                        }
+                    } catch (e) {
+                        error.value = 'Network error occurred';
+                    } finally {
+                        loading.value = false;
+                    }
+                };
+
+                return { username, password, loading, error, handleLogin };
+            }
+        }).mount('#login-app');
+    </script>
+</body>
+
+</html>

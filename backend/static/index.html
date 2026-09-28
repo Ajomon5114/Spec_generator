@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spec PDF Generator Pro</title>
+    <link rel="icon" type="image/png" href="/static/favicon.png">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Vue 3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <div id="app" class="dashboard-layout" v-cloak>
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <!-- <img src="/static/favicon.png" alt="Logo"> -->
+                <h2>Spec Generator</h2>
+            </div>
+            
+            <!-- Admin Sidebar -->
+            <nav class="sidebar-nav" v-if="currentUser && currentUser.role === 'admin'">
+                <button @click="activeRoute = 'home'" class="sidebar-link" :class="{ active: activeRoute === 'home' }">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    Home
+                </button>
+                <button @click="activeRoute = 'generator'" class="sidebar-link" :class="{ active: activeRoute === 'generator' }">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    Spec Generator
+                </button>
+                <button @click="activeRoute = 'templates'" class="sidebar-link" :class="{ active: activeRoute === 'templates' }">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                    All Templates
+                </button>
+                <button @click="activeRoute = 'users'" class="sidebar-link" :class="{ active: activeRoute === 'users' }">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    User Management
+                </button>
+                <button @click="activeRoute = 'activity'" class="sidebar-link" :class="{ active: activeRoute === 'activity' }">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                    Activity Logs
+                </button>
+                <button @click="activeRoute = 'settings'" class="sidebar-link" :class="{ active: activeRoute === 'settings' }">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    Dropdown Settings
+                </button>
+            </nav>
+
+            <!-- Dept Head Sidebar -->
+            <nav class="sidebar-nav" v-else-if="currentUser && currentUser.role === 'dept_head'">
+                <button @click="activeRoute = 'home'" class="sidebar-link" :class="{ active: activeRoute === 'home' }">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    Home
+                </button>
+                <button @click="activeRoute = 'generator'" class="sidebar-link" :class="{ active: activeRoute === 'generator' }">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    Spec Generator
+                </button>
+                <button @click="activeRoute = 'templates'" class="sidebar-link" :class="{ active: activeRoute === 'templates' }">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                    Department Templates
+                </button>
+                <button @click="activeRoute = 'settings'" class="sidebar-link" :class="{ active: activeRoute === 'settings' }">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    Dropdown Settings
+                </button>
+            </nav>
+
+            <!-- User Sidebar -->
+            <nav class="sidebar-nav" v-else-if="currentUser && currentUser.role === 'user'">
+                <button @click="activeRoute = 'home'" class="sidebar-link" :class="{ active: activeRoute === 'home' }">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    Home
+                </button>
+                <button @click="activeRoute = 'generator'" class="sidebar-link" :class="{ active: activeRoute === 'generator' }">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    Spec Generator
+                </button>
+                <button @click="activeRoute = 'templates'" class="sidebar-link" :class="{ active: activeRoute === 'templates' }">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                    My Specs
+                </button>
+            </nav>
+
+            <!-- Viewer Sidebar -->
+            <nav class="sidebar-nav" v-else-if="currentUser && currentUser.role === 'viewer'">
+                <button @click="activeRoute = 'home'" class="sidebar-link" :class="{ active: activeRoute === 'home' }">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    Home
+                </button>
+                <button @click="activeRoute = 'generator'" class="sidebar-link" :class="{ active: activeRoute === 'generator' }">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    Spec Generator
+                </button>
+                <button @click="activeRoute = 'templates'" class="sidebar-link" :class="{ active: activeRoute === 'templates' }">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                    Spec Library
+                </button>
+            </nav>
+        </aside>
+
+        <div class="main-wrapper">
+            <!-- Navbar -->
+            <header class="navbar">
+                <div class="navbar-brand">
+                    <h1>Specification System</h1>
+                </div>
+                <div class="navbar-actions">
+                    <button @click="handleLogout" class="btn btn-small btn-text" style="color: var(--text-main);">Logout</button>
+                </div>
+            </header>
+
+            <main class="main-content">
+                
+                <!-- Welcome Page -->
+                <div v-if="activeRoute === 'home'" class="app-container" style="padding-top: 2rem;">
+                    <div class="welcome-page" style="margin-top: 0; min-height: auto; padding: 2rem; background: var(--bg-card); border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                        <img src="/static/favicon.png" alt="Logo" style="width: 80px; height: 80px;">
+                        <h1 style="margin-top: 1rem;">Welcome to Spec Generator</h1>
+                        <p>Create, manage, and export high-quality product specifications with a click of a button. Designed exclusively for Bio-Med Ingredients.</p>
+                        <div class="welcome-actions">
+                            <button @click="activeRoute = 'generator'" class="primary-btn">Create Specification</button>
+                            <button @click="activeRoute = 'templates'" class="btn btn-outline" style="display: flex; align-items: center; padding: 0.875rem 2rem; border-radius: 0.375rem; font-weight: 600;">Manage Templates</button>
+                        </div>
+                    </div>
+
+                    <!-- Dashboard Stats (Managers only) -->
+                    <div v-if="currentUser && (currentUser.role === 'admin' || currentUser.role === 'dept_head')" style="margin-top: 2rem;">
+                        <h2 style="margin-bottom: 1rem; font-size: 1.25rem;">Overview</h2>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                            <div class="glass-panel" style="padding: 1.5rem; text-align: center;">
+                                <div style="font-size: 2.5rem; font-weight: 700; color: var(--accent-color);">{{ dashboardStats.total_templates || 0 }}</div>
+                                <div style="color: var(--text-muted); font-size: 0.9rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.5rem;">Total Templates</div>
+                            </div>
+                            <div class="glass-panel" style="padding: 1.5rem; text-align: center;">
+                                <div style="font-size: 2.5rem; font-weight: 700; color: var(--accent-color);">{{ dashboardStats.total_users || 0 }}</div>
+                                <div style="color: var(--text-muted); font-size: 0.9rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.5rem;">Active Users</div>
+                            </div>
+                        </div>
+                    </div>
+                        
+                    <!-- Recent Templates List (All users) -->
+                    <div style="margin-top: 2rem;">
+                        <h2 style="margin-bottom: 1rem; font-size: 1.25rem;">Recently Added Templates</h2>
+                        <div class="glass-panel section-panel">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Product Name</th>
+                                        <th>Updated Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(rt, index) in dashboardStats.recent_templates" :key="index">
+                                        <td><strong>{{ rt.name }}</strong></td>
+                                        <td>{{ rt.date ? new Date(rt.date).toLocaleString() : '-' }}</td>
+                                    </tr>
+                                    <tr v-if="!dashboardStats.recent_templates || dashboardStats.recent_templates.length === 0">
+                                        <td colspan="2" style="text-align: center; padding: 2rem;">No recent templates found</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Templates List Page -->
+                <div v-else-if="activeRoute === 'templates'" class="app-container" style="max-width: 1200px;">
+                    <div class="dashboard-header" style="margin-bottom: 2rem; border-bottom: none; padding-bottom: 0;">
+                        <div>
+                            <h2 style="font-size: 1.8rem; font-weight: 700; color: var(--text-main);">My Templates</h2>
+                            <p style="color: var(--text-muted); font-size: 0.9em; margin-top: 0.25rem;">Manage your specifications or create a new one.</p>
+                        </div>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <input type="text" v-model="searchQuery" placeholder="Search templates..." class="styled-input" style="width: 250px;">
+                            <template v-if="currentUser && currentUser.role !== 'viewer'">
+                                <button @click="createBlankSpec" class="primary-btn-small">+ Create New</button>
+                            </template>
+                        </div>
+                    </div>
+                    
+                    <div class="template-list" v-if="filteredTemplates.length > 0">
+                        <div class="template-card" v-for="t in filteredTemplates" :key="t.id">
+                            <div class="template-info">
+                                <h3>{{ t.product_name }}</h3>
+                                <p>Spec Number: {{ t.spec_data.spec_number || 'N/A' }}</p>
+                            </div>
+                            <div class="template-actions">
+                                <button @click="editSpec(t)" class="btn-small btn-outline">Edit / Generate</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div v-else class="empty-preview">
+                        <p>No templates found.</p>
+                    </div>
+                </div>
+
+                <div v-else-if="activeRoute === 'generator' && specData" class="app-container">
+                    <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h2 style="font-size: 1.8rem; font-weight: 700; color: var(--text-main);">Generate Specification</h2>
+                            <p style="color: var(--text-muted); margin-top: 0.25rem;">Fill out the form below to generate a premium specification PDF.</p>
+                        </div>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <input type="file" ref="pdfInput" @change="handlePdfUpload" accept=".pdf" style="display: none;">
+                            <button @click="triggerPdfUpload" class="btn-outline" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem;" :disabled="isParsing" v-if="currentUser && currentUser.role !== 'viewer'">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" v-if="!isParsing"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                <div class="spinner-small" v-if="isParsing" style="border-top-color: var(--primary);"></div>
+                                <span>{{ isParsing ? 'Parsing...' : 'Auto-Fill from PDF' }}</span>
+                            </button>
+                            <button @click="activeRoute = 'templates'" class="btn-small btn-outline">&larr; Back to Templates</button>
+                        </div>
+                    </div>
+
+            <div class="form-column" v-if="viewMode === 'edit'">
+
+                <!-- 1. Product Details -->
+                <div class="glass-panel section-panel">
+                    <div class="panel-header">
+                        <h2>Product Details</h2>
+                        <span class="badge">General</span>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group col-span-2">
+                            <label>Product Name (Must be unique)</label>
+                            <input type="text" v-model="specData.product_name" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Spec Number</label>
+                            <input type="text" v-model="specData.spec_number" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Revision no</label>
+                            <input type="text" v-model="specData.revision_no" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Effective Date</label>
+                            <input type="date" v-model="specData.effective_date" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Revision Due Date</label>
+                            <input type="date" v-model="specData.revision_due_date" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Botanical Name</label>
+                            <input type="text" v-model="specData.botanical_name" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Plant Part Used</label>
+                            <input type="text" v-model="specData.plant_part_used" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Standardization</label>
+                            <input type="text" v-model="specData.standardization" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Production Method</label>
+                            <input type="text" v-model="specData.production_method" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Shelf Life</label>
+                            <input type="text" v-model="specData.shelf_life" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Country of Origin</label>
+                            <input type="text" v-model="specData.country_of_origin" class="form-input">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Test Categories -->
+                <div class="glass-panel section-panel">
+                    <div class="panel-header">
+                        <h2>Test Categories</h2>
+                        <button @click="addCategory" class="btn btn-small btn-outline">+ Add Category</button>
+                    </div>
+
+                    <div v-for="(cat, catIdx) in specData.test_categories" :key="catIdx" class="category-block">
+                        <div class="category-header">
+                            <input type="text" v-model="cat.category" class="form-input category-title"
+                                placeholder="Category Name (e.g. Physical)" readonly>
+                            <button @click="removeCategory(catIdx)" class="btn-icon danger"
+                                title="Remove Category">✖</button>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th width="10%">SL No</th>
+                                        <th width="25%">Protocol</th>
+                                        <th width="35%">Parameter</th>
+                                        <th width="20%">Limit</th>
+                                        <th width="10%"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(row, rowIdx) in cat.rows" :key="rowIdx">
+                                        <td><input type="text" v-model="row.sl_no" @input="updateSlNos(catIdx, rowIdx)" class="form-input cell-input"
+                                                :readonly="!row.isNew"></td>
+                                        <td>
+                                            <select v-model="row.protocol" class="form-input cell-input">
+                                                <option value="">None</option>
+                                                <option v-for="protocol in availableProtocols" :key="protocol" :value="protocol">{{ protocol }}</option>
+                                            </select>
+                                        </td>
+                                        <td><textarea v-model="row.parameter" class="form-input cell-input" rows="2"
+                                                :readonly="!row.isNew"></textarea></td>
+                                        <td><textarea v-model="row.limit" class="form-input cell-input"
+                                                rows="2"></textarea></td>
+                                        <td style="vertical-align: middle; text-align: center; white-space: nowrap;">
+                                            <button @click="duplicateTestRow(catIdx, rowIdx)" class="btn-icon" style="font-size: 1.2rem; vertical-align: middle;" title="Duplicate Row">⎘</button>
+                                            <button @click="removeTestRow(catIdx, rowIdx)" class="btn-icon danger-text" style="vertical-align: middle;"
+                                                title="Remove Row">✖</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <button @click="addTestRow(catIdx)" class="btn btn-small btn-text">+ Add Row</button>
+                    </div>
+                </div>
+
+                <!-- 3. Additional Info -->
+                <div class="glass-panel section-panel">
+                    <div class="panel-header">
+                        <h2>Additional Information</h2>
+                        <button @click="addInfoRow" class="btn btn-small btn-outline">+ Add Info</button>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th width="30%">Parameter</th>
+                                    <th width="60%">Detail</th>
+                                    <th width="10%"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(info, infoIdx) in specData.additional_info" :key="infoIdx">
+                                    <td><input type="text" v-model="info.parameter" class="form-input cell-input" :readonly="!info.isNew"></td>
+                                    <td><textarea v-model="info.detail" class="form-input cell-input"
+                                            rows="2"></textarea></td>
+                                    <td style="vertical-align: middle; text-align: center; white-space: nowrap;">
+                                        <button @click="duplicateInfoRow(infoIdx)" class="btn-icon" style="font-size: 1.2rem; vertical-align: middle;" title="Duplicate Row">⎘</button>
+                                        <button @click="removeInfoRow(infoIdx)" class="btn-icon danger-text" style="vertical-align: middle;"
+                                            title="Remove Row">✖</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 4. Notes -->
+                <div class="glass-panel section-panel">
+                    <div class="panel-header">
+                        <h2>Internal Notes</h2>
+                    </div>
+                    <textarea v-model="specData.notes" class="form-input" rows="4" placeholder="Add any internal notes or remarks about this template..."></textarea>
+                </div>
+
+                <!-- Actions -->
+                <div class="actions" style="margin-top: 2rem; text-align: center;">
+                    <button @click="generatePDF(false)" class="primary-btn" :disabled="isGenerating">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" v-if="!isGenerating">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        <div class="spinner-small" v-if="isGenerating"></div>
+                        <span>{{ isGenerating ? 'Generating...' : 'Generate PDF' }}</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Preview Mode -->
+            <div class="preview-column" v-if="viewMode === 'preview'">
+                <div class="glass-panel">
+                    <div class="panel-header preview-header">
+                        <h2>Document Preview</h2>
+                        <div class="preview-actions">
+                            <button @click="viewMode = 'edit'" class="btn btn-small btn-outline">
+                                &larr; Back to Edit
+                            </button>
+                            <button @click="toggleFullScreen" class="btn btn-small btn-outline" title="Full Screen"
+                                v-if="pdfUrl">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path
+                                        d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3">
+                                    </path>
+                                </svg>
+                            </button>
+                            <button @click="generatePDF(false)" class="btn btn-small btn-outline"
+                                :disabled="isGenerating">
+                                <span v-if="!isGenerating">Refresh</span>
+                                <span v-else>Loading...</span>
+                            </button>
+                            <button @click="generatePDF(true)" class="btn btn-small primary-btn-small"
+                                :disabled="!pdfUrl || isGenerating">
+                                Download
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="pdf-container" style="height: 75vh;">
+                        <iframe v-if="pdfUrl" :src="pdfUrl" class="pdf-iframe"></iframe>
+                        <div v-else class="empty-preview">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                                style="opacity: 0.5; margin-bottom: 1rem;">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                            <p>Loading document preview...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div> <!-- End of generator app-container -->
+                
+            <div v-else-if="activeRoute === 'settings'" class="app-container">
+                <div class="dashboard-header" style="margin-bottom: 2rem;">
+                        <h2>Dropdown Settings</h2>
+                    </div>
+                    
+                    <div class="glass-panel section-panel">
+                        <div class="panel-header">
+                            <h2>Protocol Options</h2>
+                            <button @click="addProtocol" class="btn btn-small btn-outline">+ Add Option</button>
+                        </div>
+                        
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Protocol Name</th>
+                                        <th width="10%">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(protocol, idx) in availableProtocols" :key="idx">
+                                        <td><input type="text" v-model="availableProtocols[idx]" class="form-input cell-input"></td>
+                                        <td><button @click="removeProtocol(idx)" class="btn-icon danger-text" title="Remove">✖</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="actions" style="margin-top: 1rem;">
+                            <button @click="saveSettings" class="primary-btn-small" :disabled="isSavingSettings">
+                                <div class="spinner-small" v-if="isSavingSettings"></div>
+                                <span>{{ isSavingSettings ? 'Saving...' : 'Save Settings' }}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- USERS TAB -->
+                <div v-else-if="activeRoute === 'users' && currentUser && currentUser.role === 'admin'" class="app-container">
+                    <div class="dashboard-header" style="margin-bottom: 2rem;">
+                        <h2>User Management</h2>
+                        <button @click="showNewUserModal = true" class="primary-btn-small">+ Add User</button>
+                    </div>
+                    <div class="glass-panel section-panel">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Role</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="u in users" :key="u.id">
+                                    <td>{{ u.username }}</td>
+                                    <td>
+                                        <select v-model="u.role" @change="changeUserRole(u)" class="form-input" style="width: auto;">
+                                            <option value="admin">Admin</option>
+                                            <option value="dept_head">Dept Head</option>
+                                            <option value="user">User</option>
+                                            <option value="viewer">Viewer</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <button @click="deleteUser(u.id)" class="btn-small danger-text">Delete</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ACTIVITY TAB -->
+                <div v-else-if="activeRoute === 'activity' && currentUser && currentUser.role === 'admin'" class="app-container">
+                    <div class="dashboard-header" style="margin-bottom: 2rem;">
+                        <h2>Activity Log</h2>
+                        <button @click="loadActivityLogs" class="btn-small btn-outline">Refresh</button>
+                    </div>
+                    <div class="glass-panel section-panel" style="max-height: 600px; overflow-y: auto;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>User</th>
+                                    <th>Action</th>
+                                    <th>Product</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="log in activityLogs" :key="log.timestamp">
+                                    <td style="font-size: 0.85rem; color: #666;">{{ new Date(log.timestamp).toLocaleString() }}</td>
+                                    <td><strong>{{ log.username }}</strong></td>
+                                    <td><span class="badge">{{ log.action }}</span></td>
+                                    <td>{{ log.product_name || '-' }}</td>
+                                    <td style="font-size: 0.9rem;">{{ log.details || '-' }}</td>
+                                </tr>
+                                <tr v-if="activityLogs.length === 0">
+                                    <td colspan="5" style="text-align: center; padding: 2rem;">No activity found</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div v-else class="loading-state">
+                    <div class="spinner"></div>
+                    <p>Loading application data...</p>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- New User Modal -->
+    <div class="modal-overlay" v-if="showNewUserModal" @click.self="showNewUserModal = false">
+        <div class="modal-content" style="max-width: 400px; padding: 2rem;">
+            <h3 style="margin-top: 0;">Create New User</h3>
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label>Username</label>
+                <input type="text" v-model="newUser.username" class="form-input">
+            </div>
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label>Password</label>
+                <input type="password" v-model="newUser.password" class="form-input">
+            </div>
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label>Role</label>
+                <select v-model="newUser.role" class="form-input">
+                    <option value="admin">Admin</option>
+                    <option value="dept_head">Dept Head</option>
+                    <option value="user">User</option>
+                    <option value="viewer">Viewer</option>
+                </select>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                <button @click="showNewUserModal = false" class="btn-outline">Cancel</button>
+                <button @click="createUser" class="primary-btn">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js?v=9"></script>
+</body>
+
+</html>
